@@ -246,7 +246,6 @@ function handleNotFound(req, res) {
 
 function handleError(error, res) {
   console.error(error);
-  process.exit(1);
   res.status(500).render('error', { error_data: error });
 }
 
