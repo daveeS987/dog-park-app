@@ -62,4 +62,4 @@ YELP_API_KEY = << Get from Yelp website >>
 GOOGLE_API_KEY = << Get from Google developer console >
 ```
 
-- run `nodemon server.js`
+- Run `nodemon server.js`
