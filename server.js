@@ -9,17 +9,18 @@ const superagent = require('superagent');
 const cors = require('cors');
 const morgan = require('morgan');
 
-// const pg = require('pg');
-// const client = new pg.Client(process.env.DATABASE_URL);
-
+// --- This code is required in order to make it deployable --- //
+// --- However it will break in local production. Has something to do with ssl
 const { Client } = require('pg');
-
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false,
   },
 });
+// ------------------------------------------------------------- //
+// const pg = require('pg');
+// const client = new pg.Client(process.env.DATABASE_URL);
 
 const app = express();
 const PORT = process.env.PORT;
