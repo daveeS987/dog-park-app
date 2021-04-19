@@ -176,7 +176,7 @@ function makeMultipleAPIcalls(location, res) {
   promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryGroomers));
   promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryVets));
   promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryDogDayCare));
-  return Promise.all(promises)
+  return Promise.allSettled(promises)
     .then(([foodtruck, groomers, vets, dogDayCare]) => {
       let foodTruckArr = foodtruck.body.businesses.map((truck) => new FoodTrucks(truck));
       let groomersArr = groomers.body.businesses.map((groomer) => new Groomers(groomer));
