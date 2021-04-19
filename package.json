@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/301-MRCD/301-final-project.git"
+    "url": "git+https://github.com/daveeS987/301-final-project"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/301-MRCD/301-final-project/issues"
+    "url": "https://github.com/daveeS987/301-final-project/issues"
   },
-  "homepage": "https://github.com/301-MRCD/301-final-project#readme",
+  "homepage": "https://github.com/daveeS987/301-final-project#readme",
   "dependencies": {
     "axios": "^0.21.1",
     "cors": "^2.8.5",
