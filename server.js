@@ -1,53 +1,54 @@
-'use strict';
+"use strict";
 // ----------------------------------------------
 // LIBRARIES AND DECLARATIONS
 // ----------------------------------------------
-require('dotenv').config();
+require("dotenv").config();
 
-const express = require('express');
-const superagent = require('superagent');
-const pg = require('pg');
-const cors = require('cors');
-const morgan = require('morgan');
+const express = require("express");
+const superagent = require("superagent");
+const pg = require("pg");
+const cors = require("cors");
+const morgan = require("morgan");
 const client = new pg.Client(process.env.DATABASE_URL);
 const app = express();
 const PORT = process.env.PORT;
-const override = require('method-override');
+const override = require("method-override");
 
-app.set('view engine', 'ejs');
+app.set("view engine", "ejs");
 app.use(cors());
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('./public'));
-app.use(override('_method'));
+app.use(express.static("./public"));
+app.use(override("_method"));
 
 // ----------------------------------------------
 // ROUTES
 // ---------------------------------------------
-app.get('/', handleHome);
-app.get('/render-results', renderResults);
-app.post('/render-details', renderDetail);
-app.post('/add-ratings', addRatings);
-app.get('/render-about', renderAbout);
+app.get("/", handleHome);
+app.get("/render-results", renderResults);
+app.post("/render-details", renderDetail);
+app.post("/add-ratings", addRatings);
+app.get("/render-about", renderAbout);
 
-app.use('*', handleNotFound);
+app.use("*", handleNotFound);
 app.use(handleError);
 
 // ----------------------------------------------
 // ROUTE HANDLER FUNCTIONS
 // ----------------------------------------------
 
-function handleHome(req, res) {
-  res
-    .status(200)
-    .render('pages/index')
-    .catch((error) => handleError(error, res));
+async function handleHome(req, res, next) {
+  try {
+    await res.status(200).render("pages/index");
+  } catch (e) {
+    next(e);
+  }
 }
 
 function renderAbout(req, res) {
   res
     .status(200)
-    .render('pages/about')
+    .render("pages/about")
     .catch((error) => handleError(error, res));
 }
 
@@ -56,19 +57,22 @@ function renderResults(req, res) {
   const API = `https://api.yelp.com/v3/businesses/search`;
 
   let queryObject = {
-    categories: 'dog_parks',
-    sort_by: 'distance',
+    categories: "dog_parks",
+    sort_by: "distance",
     location: searchQuery,
     limit: 12,
   };
 
   superagent
     .get(API)
-    .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
+    .set("Authorization", `Bearer ${process.env.YELP_API_KEY}`)
     .query(queryObject)
     .then((obj) => {
       let apiData = obj.body.businesses.map((park) => new Park(park));
-      res.status(200).render('pages/results', { parkArr: apiData, searchQuery: searchQuery });
+      res.status(200).render("pages/results", {
+        parkArr: apiData,
+        searchQuery: searchQuery,
+      });
     })
     .catch((error) => handleError(error, res));
 }
@@ -120,8 +124,10 @@ function addRatings(req, res) {
 function helpRenderDetails(req, res, psqlResults) {
   makeMultipleAPIcalls(req.body.address)
     .then((APIresult) => {
-      let average = psqlResults.rows[0].total_ratings / psqlResults.rows[0].total_votes || 0;
-      res.status(200).render('pages/details', {
+      let average =
+        psqlResults.rows[0].total_ratings / psqlResults.rows[0].total_votes ||
+        0;
+      res.status(200).render("pages/details", {
         lat: req.body.lat,
         lng: req.body.long,
         ratings: psqlResults.rows[0],
@@ -136,88 +142,141 @@ function helpRenderDetails(req, res, psqlResults) {
         dogDayCareArr: APIresult.dogDayCare1,
       });
     })
-    .catch((error) => console.log('Error:', error));
+    .catch((error) => console.log("Error:", error));
 }
 
 function makeMultipleAPIcalls(location, res) {
-  let API1 = 'https://api.yelp.com/v3/businesses/search';
+  let API1 = "https://api.yelp.com/v3/businesses/search";
 
   let queryFoodTruck = {
-    term: 'food truck',
-    category: 'restaurant',
+    term: "food truck",
+    category: "restaurant",
     location: location,
-    sort_by: 'distance',
+    sort_by: "distance",
     limit: 6,
   };
 
   let queryGroomers = {
-    term: 'groomers',
-    category: 'petservices,All',
+    term: "groomers",
+    category: "petservices,All",
     location: location,
-    sort_by: 'distance',
+    sort_by: "distance",
     limit: 6,
   };
 
   let queryVets = {
-    term: 'veterinarians',
-    category: 'vet,All',
+    term: "veterinarians",
+    category: "vet,All",
     location: location,
-    sort_by: 'distance',
+    sort_by: "distance",
     limit: 6,
   };
 
   let queryDogDayCare = {
-    term: 'dog daycare',
-    category: 'petservices,All',
+    term: "dog daycare",
+    category: "petservices,All",
     location: location,
-    sort_by: 'distance',
+    sort_by: "distance",
     limit: 6,
   };
 
   let promises = [];
-  promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryFoodTruck));
-  promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryGroomers));
-  promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryVets));
-  promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryDogDayCare));
-  return Promise.all(promises).then(([foodtruck, groomers, vets, dogDayCare]) => {
-    let foodTruckArr = foodtruck.body.businesses.map((truck) => new FoodTrucks(truck));
-    let groomersArr = groomers.body.businesses.map((groomer) => new Groomers(groomer));
-    let vetsArr = vets.body.businesses.map((vet) => new Vets(vet));
-    let dogDayCareArr = dogDayCare.body.businesses.map((dayCare) => new DogDayCare(dayCare));
-    return { foodtruck1: foodTruckArr, groomer1: groomersArr, vets1: vetsArr, dogDayCare1: dogDayCareArr };
-  });
+  promises.push(
+    superagent
+      .get(API1)
+      .set("Authorization", `Bearer ${process.env.YELP_API_KEY}`)
+      .query(queryFoodTruck)
+  );
+  promises.push(
+    superagent
+      .get(API1)
+      .set("Authorization", `Bearer ${process.env.YELP_API_KEY}`)
+      .query(queryGroomers)
+  );
+  promises.push(
+    superagent
+      .get(API1)
+      .set("Authorization", `Bearer ${process.env.YELP_API_KEY}`)
+      .query(queryVets)
+  );
+  promises.push(
+    superagent
+      .get(API1)
+      .set("Authorization", `Bearer ${process.env.YELP_API_KEY}`)
+      .query(queryDogDayCare)
+  );
+  return Promise.all(promises).then(
+    ([foodtruck, groomers, vets, dogDayCare]) => {
+      let foodTruckArr = foodtruck.body.businesses.map(
+        (truck) => new FoodTrucks(truck)
+      );
+      let groomersArr = groomers.body.businesses.map(
+        (groomer) => new Groomers(groomer)
+      );
+      let vetsArr = vets.body.businesses.map((vet) => new Vets(vet));
+      let dogDayCareArr = dogDayCare.body.businesses.map(
+        (dayCare) => new DogDayCare(dayCare)
+      );
+      return {
+        foodtruck1: foodTruckArr,
+        groomer1: groomersArr,
+        vets1: vetsArr,
+        dogDayCare1: dogDayCareArr,
+      };
+    }
+  );
 }
 
 function FoodTrucks(obj) {
-  this.food_truck_name = obj.name || 'NAME NOT AVAILABLE';
-  this.food_truck_image_url = obj.image_url || 'https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483296.jpg';
-  this.food_truck_url = obj.url || 'URL NOT AVAIALABLE';
-  this.food_truck_address = obj.location.display_address[0] + ' ' + (obj.location.display_address[1] || '');
-  this.food_truck_phone = obj.display_phone || 'PHONE NUMBER NOT AVAILABLE';
+  this.food_truck_name = obj.name || "NAME NOT AVAILABLE";
+  this.food_truck_image_url =
+    obj.image_url ||
+    "https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483296.jpg";
+  this.food_truck_url = obj.url || "URL NOT AVAIALABLE";
+  this.food_truck_address =
+    obj.location.display_address[0] +
+    " " +
+    (obj.location.display_address[1] || "");
+  this.food_truck_phone = obj.display_phone || "PHONE NUMBER NOT AVAILABLE";
 }
 
 function Groomers(obj) {
-  this.groomers_name = obj.name || 'NAME NOT AVAILABLE';
-  this.groomers_image_url = obj.image_url || 'https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483296.jpg';
-  this.groomers_url = obj.url || 'URL NOT AVAIALABLE';
-  this.groomers_address = obj.location.display_address[0] + ' ' + (obj.location.display_address[1] || '');
-  this.groomers_phone = obj.display_phone || 'PHONE NUMBER NOT AVAILABLE';
+  this.groomers_name = obj.name || "NAME NOT AVAILABLE";
+  this.groomers_image_url =
+    obj.image_url ||
+    "https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483296.jpg";
+  this.groomers_url = obj.url || "URL NOT AVAIALABLE";
+  this.groomers_address =
+    obj.location.display_address[0] +
+    " " +
+    (obj.location.display_address[1] || "");
+  this.groomers_phone = obj.display_phone || "PHONE NUMBER NOT AVAILABLE";
 }
 
 function Vets(obj) {
-  this.vets_name = obj.name || 'NAME NOT AVAILABLE';
-  this.vets_image_url = obj.image_url || 'https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483296.jpg';
-  this.vets_url = obj.url || 'URL NOT AVAIALABLE';
-  this.vets_address = obj.location.display_address[0] + ' ' + (obj.location.display_address[1] || '');
-  this.vets_phone = obj.display_phone || 'PHONE NUMBER NOT AVAILABLE';
+  this.vets_name = obj.name || "NAME NOT AVAILABLE";
+  this.vets_image_url =
+    obj.image_url ||
+    "https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483296.jpg";
+  this.vets_url = obj.url || "URL NOT AVAIALABLE";
+  this.vets_address =
+    obj.location.display_address[0] +
+    " " +
+    (obj.location.display_address[1] || "");
+  this.vets_phone = obj.display_phone || "PHONE NUMBER NOT AVAILABLE";
 }
 
 function DogDayCare(obj) {
-  this.dog_dayCare_name = obj.name || 'NAME NOT AVAILABLE';
-  this.dog_dayCare_image_url = obj.image_url || 'https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483296.jpg';
-  this.dog_dayCare_url = obj.url || 'URL NOT AVAIALABLE';
-  this.dog_dayCare_address = obj.location.display_address[0] + ' ' + (obj.location.display_address[1] || '');
-  this.dog_dayCare_phone = obj.display_phone || 'PHONE NUMBER NOT AVAILABLE';
+  this.dog_dayCare_name = obj.name || "NAME NOT AVAILABLE";
+  this.dog_dayCare_image_url =
+    obj.image_url ||
+    "https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483296.jpg";
+  this.dog_dayCare_url = obj.url || "URL NOT AVAIALABLE";
+  this.dog_dayCare_address =
+    obj.location.display_address[0] +
+    " " +
+    (obj.location.display_address[1] || "");
+  this.dog_dayCare_phone = obj.display_phone || "PHONE NUMBER NOT AVAILABLE";
 }
 
 // ----------------------------------------------
@@ -227,9 +286,14 @@ function DogDayCare(obj) {
 function Park(obj) {
   //api data
   this.yelp_id = obj.id;
-  this.name = obj.name || 'NAME NOT AVAILABLE';
-  this.image_url = obj.image_url || 'https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483296.jpg';
-  this.address = obj.location.display_address[0] + ' ' + (obj.location.display_address[1] || '');
+  this.name = obj.name || "NAME NOT AVAILABLE";
+  this.image_url =
+    obj.image_url ||
+    "https://thumbs.dreamstime.com/b/no-image-available-icon-photo-camera-flat-vector-illustration-132483296.jpg";
+  this.address =
+    obj.location.display_address[0] +
+    " " +
+    (obj.location.display_address[1] || "");
   this.lat = obj.coordinates.latitude;
   this.long = obj.coordinates.longitude;
 }
@@ -239,12 +303,12 @@ function Park(obj) {
 // ----------------------------------------------
 
 function handleNotFound(req, res) {
-  res.status(404).send('Could Not Find What You Asked For');
+  res.status(404).send("Could Not Find What You Asked For");
 }
 
 function handleError(error, res) {
   console.error(error);
-  res.status(500).render('error', { error_data: error });
+  res.status(500).render("error", { error_data: error });
 }
 
 // ----------------------------------------------
@@ -252,5 +316,5 @@ function handleError(error, res) {
 // ----------------------------------------------
 
 client.connect().then(() => {
-  app.listen(PORT, () => console.log('Server running on port', PORT));
+  app.listen(PORT, () => console.log("Server running on port", PORT));
 });
