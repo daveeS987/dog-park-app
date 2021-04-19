@@ -38,7 +38,10 @@ app.use(handleError);
 // ----------------------------------------------
 
 function handleHome(req, res) {
-  res.status(200).render('pages/index');
+  res
+    .status(200)
+    .render('pages/index')
+    .catch((error) => handleError(error, res));
 }
 
 function renderAbout(req, res) {
