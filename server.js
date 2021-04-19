@@ -6,10 +6,21 @@ require('dotenv').config();
 
 const express = require('express');
 const superagent = require('superagent');
-const pg = require('pg');
 const cors = require('cors');
 const morgan = require('morgan');
-const client = new pg.Client(process.env.DATABASE_URL);
+
+// const pg = require('pg');
+// const client = new pg.Client(process.env.DATABASE_URL);
+
+const { Client } = require('pg');
+
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+
 const app = express();
 const PORT = process.env.PORT;
 const override = require('method-override');
