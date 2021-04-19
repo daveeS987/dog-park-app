@@ -45,7 +45,7 @@ function renderAbout(req, res) {
   res
     .status(200)
     .render('pages/about')
-    .catch(error => handleError(error, res));
+    .catch((error) => handleError(error, res));
 }
 
 function renderResults(req, res) {
@@ -63,11 +63,11 @@ function renderResults(req, res) {
     .get(API)
     .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
     .query(queryObject)
-    .then(obj => {
-      let apiData = obj.body.businesses.map(park => new Park(park));
-      res.status(200).render('pages/results', { parkArr: apiData, searchQuery: searchQuery});
+    .then((obj) => {
+      let apiData = obj.body.businesses.map((park) => new Park(park));
+      res.status(200).render('pages/results', { parkArr: apiData, searchQuery: searchQuery });
     })
-    .catch(error => handleError(error, res));
+    .catch((error) => handleError(error, res));
 }
 
 function renderDetail(req, res) {
@@ -75,14 +75,14 @@ function renderDetail(req, res) {
   let values = [req.body.yelp_id];
   client
     .query(SQL, values)
-    .then(results => {
+    .then((results) => {
       if (results.rowCount === 0) {
         createParkRating(req, res);
       } else {
         helpRenderDetails(req, res, results);
       }
     })
-    .catch(error => handleError(error, res));
+    .catch((error) => handleError(error, res));
 }
 
 function createParkRating(req, res) {
@@ -90,10 +90,10 @@ function createParkRating(req, res) {
   let safequery = [req.body.yelp_id, req.body.name, 0, 0];
   client
     .query(SQL, safequery)
-    .then(results => {
+    .then((results) => {
       helpRenderDetails(req, res, results);
     })
-    .catch(error => handleError(error, res));
+    .catch((error) => handleError(error, res));
 }
 
 function addRatings(req, res) {
@@ -107,31 +107,33 @@ function addRatings(req, res) {
 
   client
     .query(SQL, params)
-    .then(results => {
+    .then((results) => {
       helpRenderDetails(req, res, results);
     })
-    .catch(error => handleError(error, res));
+    .catch((error) => handleError(error, res));
 }
 
 ///////////////////////////////////////////
 function helpRenderDetails(req, res, psqlResults) {
-  makeMultipleAPIcalls(req.body.address).then(APIresult => {
-    let average = psqlResults.rows[0].total_ratings / psqlResults.rows[0].total_votes || 0;
-    res.status(200).render('pages/details', {
-      lat: req.body.lat,
-      lng: req.body.long,
-      ratings: psqlResults.rows[0],
-      average1: average.toFixed(1),
-      image_url: req.body.image_url,
-      name: req.body.name,
-      address: req.body.address,
-      yelp_id: req.body.yelp_id,
-      foodTruckArr: APIresult.foodtruck1,
-      groomersArr: APIresult.groomer1,
-      vetsArr: APIresult.vets1,
-      dogDayCareArr: APIresult.dogDayCare1,
-    });
-  });
+  makeMultipleAPIcalls(req.body.address)
+    .then((APIresult) => {
+      let average = psqlResults.rows[0].total_ratings / psqlResults.rows[0].total_votes || 0;
+      res.status(200).render('pages/details', {
+        lat: req.body.lat,
+        lng: req.body.long,
+        ratings: psqlResults.rows[0],
+        average1: average.toFixed(1),
+        image_url: req.body.image_url,
+        name: req.body.name,
+        address: req.body.address,
+        yelp_id: req.body.yelp_id,
+        foodTruckArr: APIresult.foodtruck1,
+        groomersArr: APIresult.groomer1,
+        vetsArr: APIresult.vets1,
+        dogDayCareArr: APIresult.dogDayCare1,
+      });
+    })
+    .catch((error) => handleError(error, res));
 }
 
 function makeMultipleAPIcalls(location) {
@@ -175,10 +177,10 @@ function makeMultipleAPIcalls(location) {
   promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryVets));
   promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryDogDayCare));
   return Promise.all(promises).then(([foodtruck, groomers, vets, dogDayCare]) => {
-    let foodTruckArr = foodtruck.body.businesses.map(truck => new FoodTrucks(truck));
-    let groomersArr = groomers.body.businesses.map(groomer => new Groomers(groomer));
-    let vetsArr = vets.body.businesses.map(vet => new Vets(vet));
-    let dogDayCareArr = dogDayCare.body.businesses.map(dayCare => new DogDayCare(dayCare));
+    let foodTruckArr = foodtruck.body.businesses.map((truck) => new FoodTrucks(truck));
+    let groomersArr = groomers.body.businesses.map((groomer) => new Groomers(groomer));
+    let vetsArr = vets.body.businesses.map((vet) => new Vets(vet));
+    let dogDayCareArr = dogDayCare.body.businesses.map((dayCare) => new DogDayCare(dayCare));
     return { foodtruck1: foodTruckArr, groomer1: groomersArr, vets1: vetsArr, dogDayCare1: dogDayCareArr };
   });
 }
@@ -249,4 +251,3 @@ function handleError(error, res) {
 client.connect().then(() => {
   app.listen(PORT, () => console.log('Server running on port', PORT));
 });
-
