@@ -1,53 +1,51 @@
 # Dog Park App
 
-Team : Davee Sok, Ryan Geddes, Chris Bortel, Michelle Salazar
+An app that allows users to search for dog parks by location and show nearby foodtrucks, groomers, vets, and dog day care.
 
 https://davees-dogpark-app.herokuapp.com/
 
-**SCRATCH BOARD**
+**Contributors**: Davee Sok, Ryan Geddes, Chris Bortel, Michelle Salazar
 
-Links we may need to come back to:
-Dog Friendly Restaurant API links:
-https://docs.developer.yelp.com/reference#business-update
-https://www.yelp.com/search?find_desc=Dog+Friendly+Restaurants&find_loc=Seattle%2C+WA
+![Version](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)
 
-how to use Goole Maps API:
+## Links and Resources
 
-https://www.youtube.com/watch?v=8NUqDc1bQ84
+- [Dog Park App Website](https://davees-dogpark-app.herokuapp.com/)
+- [Domain Model](https://lucid.app/lucidchart/invitations/accept/inv_742b8657-d802-49a8-9915-ccb39ffe9817?viewport_loc=-1923%2C-3997%2C12881%2C7387%2CGmqYbyW5DRaf)
+- [Trello Project Board](https://trello.com/b/AziNDkvf/dog-parks)
+- [Our Team Agreement](https://docs.google.com/document/d/1Y4YqEGetRE68ka0oiSGRjK2Pk6_ijXd8kQBZpq8Xt2s/edit?usp=sharing)
 
-**Heroku app**
-https://mister-cd-301-final.herokuapp.com/
+## References
 
-**Team Agreement**
-https://docs.google.com/document/d/1Y4YqEGetRE68ka0oiSGRjK2Pk6_ijXd8kQBZpq8Xt2s/edit?usp=sharing
-
-**Git hub project board**
-https://github.com/users/Ryan-Geddes/projects/1
-
-**Trello**
-https://trello.com/b/AziNDkvf/dog-parks
-
-**Heroku team**
-https://dashboard.heroku.com/apps/mister-cd-301-final/access
-
-**Project Board**
-
-https://docs.google.com/document/d/1cZqaHz-dsTCRPmIejseQbXNF0flnt9bQdDwKWoTsbKM/edit#
-
-**lucid chart**
-
-https://app.lucidchart.com/invitations/accept/2db81489-8ea8-4842-9463-e8f7d825005b
+- [Yelp API Reference](https://docs.developer.yelp.com/docs/getting-started)
+- [How to use Google API](https://www.youtube.com/watch?v=8NUqDc1bQ84)
 
 ## Overview
 
-Our final project for codefellows 301
-
-**User Story:** As a dog owner, I want to be able to find a list of dog parks in the seattle area. I’d like to be able to filter these parks by different criteria such as dog size, terrain (i.e. beach, forest) off-leash, and other useful criteria. I also want to be able to find nearby dog-friendly businesses I can take my dogs to on doggy dates after the park! I would also like to be able to save a list of my favorite parks and be able to reference them later.
-
-## Getting Started
-
-Build the wireframe, connect to the api, send and post the data via full stack app to ejs, render it.
+**User Story:**  
+As a dog owner, I want to be able to find a list of dog parks in the seattle area. I’d like to be able to filter these parks by different criteria such as dog size, terrain (i.e. beach, forest) off-leash, and other useful criteria. I also want to be able to find nearby dog-friendly businesses I can take my dogs to on doggy dates after the park! I would also like to be able to save a list of my favorite parks and be able to reference them later.
 
 ## Architecture
 
-express, superagent, cors, ejs, morgan, pg.
+This application uses an express framework and ejs templating. Park information and ratings are stored in a PostgreSQL database. Superagent is used to make API calls to Yelp and Google Maps API. This application is deployed through Heroku.
+
+## Getting Started
+
+- Make sure PostgreSQL is installed on your computer
+- Clone down this repo
+- Install Dependencies: `npm install`
+- Go to [yelp.com](https://www.yelp.com/developers/)
+  - create a new app
+  - grab the API Key
+- Go to [developers.google.com](https://developers.google.com/maps/gmp-get-started)
+  - get an API key from Google Maps JavaScript API
+- Add the following to an .env file in the root of the repository
+
+```
+PORT=3000
+DATABASE_URL = postgres:localhost:5432/dogpark_app
+YELP_API_KEY = << Get from Yelp website >>
+GOOGLE_API_KEY = << Get from Google developer console >
+```
+
+- run `nodemon server.js`
