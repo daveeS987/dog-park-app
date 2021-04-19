@@ -118,7 +118,7 @@ function addRatings(req, res) {
 
 ///////////////////////////////////////////
 function helpRenderDetails(req, res, psqlResults) {
-  makeMultipleAPIcalls(req.body.address, res)
+  makeMultipleAPIcalls(req.body.address)
     .then((APIresult) => {
       let average = psqlResults.rows[0].total_ratings / psqlResults.rows[0].total_votes || 0;
       res.status(200).render('pages/details', {
@@ -136,7 +136,7 @@ function helpRenderDetails(req, res, psqlResults) {
         dogDayCareArr: APIresult.dogDayCare1,
       });
     })
-    .catch((error) => handleError(error, res));
+    .catch((error) => console.log('Error:', error));
 }
 
 function makeMultipleAPIcalls(location, res) {
@@ -179,15 +179,13 @@ function makeMultipleAPIcalls(location, res) {
   promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryGroomers));
   promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryVets));
   promises.push(superagent.get(API1).set('Authorization', `Bearer ${process.env.YELP_API_KEY}`).query(queryDogDayCare));
-  return Promise.allSettled(promises)
-    .then(([foodtruck, groomers, vets, dogDayCare]) => {
-      let foodTruckArr = foodtruck.body.businesses.map((truck) => new FoodTrucks(truck));
-      let groomersArr = groomers.body.businesses.map((groomer) => new Groomers(groomer));
-      let vetsArr = vets.body.businesses.map((vet) => new Vets(vet));
-      let dogDayCareArr = dogDayCare.body.businesses.map((dayCare) => new DogDayCare(dayCare));
-      return { foodtruck1: foodTruckArr, groomer1: groomersArr, vets1: vetsArr, dogDayCare1: dogDayCareArr };
-    })
-    .catch((error) => handleError(error, res));
+  return Promise.all(promises).then(([foodtruck, groomers, vets, dogDayCare]) => {
+    let foodTruckArr = foodtruck.body.businesses.map((truck) => new FoodTrucks(truck));
+    let groomersArr = groomers.body.businesses.map((groomer) => new Groomers(groomer));
+    let vetsArr = vets.body.businesses.map((vet) => new Vets(vet));
+    let dogDayCareArr = dogDayCare.body.businesses.map((dayCare) => new DogDayCare(dayCare));
+    return { foodtruck1: foodTruckArr, groomer1: groomersArr, vets1: vetsArr, dogDayCare1: dogDayCareArr };
+  });
 }
 
 function FoodTrucks(obj) {
