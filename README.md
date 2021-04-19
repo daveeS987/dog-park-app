@@ -1,4 +1,4 @@
-# 301-final-project
+# Dog Park App
 
 Team : Davee Sok, Ryan Geddes, Chris Bortel, Michelle Salazar
 
