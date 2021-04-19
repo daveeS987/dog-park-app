@@ -2,7 +2,7 @@
 
 An app that allows users to search for dog parks by location and show nearby foodtrucks, groomers, vets, and dog day care.
 
-https://davees-dogpark-app.herokuapp.com/
+**https://davees-dogpark-app.herokuapp.com/**
 
 **Contributors**: Davee Sok, Ryan Geddes, Chris Bortel, Michelle Salazar
 
@@ -28,6 +28,20 @@ As a dog owner, I want to be able to find a list of dog parks in the seattle are
 ## Architecture
 
 This application uses an express framework and ejs templating. Park information and ratings are stored in a PostgreSQL database. Superagent is used to make API calls to Yelp and Google Maps API. This application is deployed through Heroku.
+
+## Dependencies and Tools
+
+<img align="left" alt="JavaScript" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/javascript/javascript.png"/>
+<img align="left" alt="Node.js" width="26px" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.ict.social%2Fimages%2F5728%2Fnodejs_logo.png&f=1&nofb=1"/>
+<img align="left" alt="Express.js" width="26px" src="https://expressjs.com/images/express-facebook-share.png"/>
+<img align="left" alt="PostgreSQL" width="26px" src="https://cdn.icon-icons.com/icons2/2415/PNG/512/postgresql_original_wordmark_logo_icon_146392.png"/>
+<img align="left" alt="EJS" width="26px" src="https://cdn.icon-icons.com/icons2/2107/PNG/512/file_type_ejs_icon_130626.png"/>
+
+</br>
+<br>
+<pre>
+<b>Javascript ➡ NodeJS ➡ ExpressJS ➡ PostgreSQL ➡ EJS ➡ SuperAgent</b>
+</pre>
 
 ## Getting Started
 
