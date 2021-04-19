@@ -148,86 +148,88 @@ async function helpRenderDetails(req, res, psqlResults, next) {
   }
 }
 
-function makeMultipleAPIcalls(location) {
-  let API1 = 'https://api.yelp.com/v3/businesses/search';
+async function makeMultipleAPIcalls(location) {
+  try {
+    let API1 = 'https://api.yelp.com/v3/businesses/search';
 
-  let queryFoodTruck = {
-    term: 'food truck',
-    category: 'restaurant',
-    location: location,
-    sort_by: 'distance',
-    limit: 6,
-  };
+    let queryFoodTruck = {
+      term: 'food truck',
+      category: 'restaurant',
+      location: location,
+      sort_by: 'distance',
+      limit: 6,
+    };
 
-  let queryGroomers = {
-    term: 'groomers',
-    category: 'petservices,All',
-    location: location,
-    sort_by: 'distance',
-    limit: 6,
-  };
+    let queryGroomers = {
+      term: 'groomers',
+      category: 'petservices,All',
+      location: location,
+      sort_by: 'distance',
+      limit: 6,
+    };
 
-  let queryVets = {
-    term: 'veterinarians',
-    category: 'vet,All',
-    location: location,
-    sort_by: 'distance',
-    limit: 6,
-  };
+    let queryVets = {
+      term: 'veterinarians',
+      category: 'vet,All',
+      location: location,
+      sort_by: 'distance',
+      limit: 6,
+    };
 
-  let queryDogDayCare = {
-    term: 'dog daycare',
-    category: 'petservices,All',
-    location: location,
-    sort_by: 'distance',
-    limit: 6,
-  };
+    let queryDogDayCare = {
+      term: 'dog daycare',
+      category: 'petservices,All',
+      location: location,
+      sort_by: 'distance',
+      limit: 6,
+    };
 
-  let promises = [];
-  promises.push(
-    superagent
-      .get(API1)
-      .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
-      .query(queryFoodTruck)
-  );
-  promises.push(
-    superagent
-      .get(API1)
-      .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
-      .query(queryGroomers)
-  );
-  promises.push(
-    superagent
-      .get(API1)
-      .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
-      .query(queryVets)
-  );
-  promises.push(
-    superagent
-      .get(API1)
-      .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
-      .query(queryDogDayCare)
-  );
-  return Promise.all(promises).then(
-    ([foodtruck, groomers, vets, dogDayCare]) => {
-      let foodTruckArr = foodtruck.body.businesses.map(
-        (truck) => new FoodTrucks(truck)
-      );
-      let groomersArr = groomers.body.businesses.map(
-        (groomer) => new Groomers(groomer)
-      );
-      let vetsArr = vets.body.businesses.map((vet) => new Vets(vet));
-      let dogDayCareArr = dogDayCare.body.businesses.map(
-        (dayCare) => new DogDayCare(dayCare)
-      );
-      return {
-        foodtruck1: foodTruckArr,
-        groomer1: groomersArr,
-        vets1: vetsArr,
-        dogDayCare1: dogDayCareArr,
-      };
-    }
-  );
+    let promises = [];
+    promises.push(
+      superagent
+        .get(API1)
+        .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
+        .query(queryFoodTruck)
+    );
+    promises.push(
+      superagent
+        .get(API1)
+        .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
+        .query(queryGroomers)
+    );
+    promises.push(
+      superagent
+        .get(API1)
+        .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
+        .query(queryVets)
+    );
+    promises.push(
+      superagent
+        .get(API1)
+        .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
+        .query(queryDogDayCare)
+    );
+    let [foodtruck, groomers, vets, dogDayCare] = await Promise.all(promises);
+
+    let foodTruckArr = foodtruck.body.businesses.map(
+      (truck) => new FoodTrucks(truck)
+    );
+    let groomersArr = groomers.body.businesses.map(
+      (groomer) => new Groomers(groomer)
+    );
+    let vetsArr = vets.body.businesses.map((vet) => new Vets(vet));
+    let dogDayCareArr = dogDayCare.body.businesses.map(
+      (dayCare) => new DogDayCare(dayCare)
+    );
+    return {
+      foodtruck1: foodTruckArr,
+      groomer1: groomersArr,
+      vets1: vetsArr,
+      dogDayCare1: dogDayCareArr,
+    };
+  } catch (error) {
+    next(error);
+  }
 }
 
 function FoodTrucks(obj) {
